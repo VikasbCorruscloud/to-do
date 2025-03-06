@@ -1,6 +1,5 @@
 import { useState } from "react";
 import SubmitButton from "./SubmitButton";
-import { FaRegCircle } from "react-icons/fa";
 import { FaRegCircleCheck } from "react-icons/fa6";
 
 const TodoList = () => {
@@ -53,12 +52,9 @@ const TodoList = () => {
                   <span className=" font-light ">{t.description}</span>
                 </div>
                 <div>
-                  <button onClick={() => completeTask(index)}>
-                    <FaRegCircle
-                    size={25}
-                      color="#C6D0D0"
-                      style={{ background: "#F6F6F6" , border:"#C6D0D0"  }}
-                    />
+                  <button 
+                  className=" border border-[#C6D0D0] bg-[#F6F6F6] h-[20px] w-[21px] rounded-full  "
+                  onClick={() => completeTask(index)}>
                   </button>
                 </div>
               </div>
