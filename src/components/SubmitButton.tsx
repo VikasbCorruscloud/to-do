@@ -39,16 +39,30 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   const submitHandle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() === "") return;
-
-    if (editIndex !== null) {
-      // Update existing task
-      setTasks((prevTasks) =>
-        prevTasks.map((t, i) =>
-          i === editIndex ? { ...t, title, description } : t
-        )
-      );
-      setEditTask(null);
-      setEditIndex(null);
+  
+    if (editTask) {
+      try {
+        // Send PUT request to update the todo
+        const response = await fetch(`/api/todos/${editTask.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...editTask, title, description }),
+        });
+  
+        if (!response.ok) throw new Error("Failed to update task");
+  
+        const updatedTodo = await response.json();
+  
+        // Update the state with the updated todo
+        setTasks((prevTasks) =>
+          prevTasks.map((t) => (t.id === updatedTodo.id ? updatedTodo : t))
+        );
+  
+        setEditTask(null);
+        setEditIndex(null);
+      } catch (error) {
+        console.error("Error updating todo:", error);
+      }
     } else {
       // Create new todo
       try {
@@ -57,18 +71,19 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title, description }),
         });
+  
         const newTodo = await response.json();
         setTasks((prev) => [...prev, newTodo]);
       } catch (error) {
         console.error("Error creating todo:", error);
       }
     }
-
+  
     setTitle("");
     setDescription("");
     setShowForm(false);
   };
-
+  
   return (
     <>
       <footer className="fixed bottom-4 left-4 right-4 bg-[#4884AE] h-[48px] rounded-md">
@@ -95,6 +110,8 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
                   setShowForm(false);
                   setEditTask(null);
                   setEditIndex(null);
+                  setTitle("")
+                  setDescription("")
                 }}
                 className="text-lg bg-[#DBDBDB] rounded-full w-[30px] h-[30px]"
               >

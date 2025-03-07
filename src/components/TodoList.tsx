@@ -39,13 +39,14 @@ const TodoList = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...todo, completed: true }),
       });
-  
+
       setCompleteTasks((prev) => [...prev, { ...todo, completed: true }]);
       setTasks((prev) => prev.filter((t) => t.id !== todo.id));
     } catch (error) {
       console.error("Error completing task:", error);
     }
   };
+  
   // Remove task from completed list
   const deleteTask = async (id: number) => {
     try {
@@ -71,7 +72,13 @@ const TodoList = () => {
               <div className="absolute left-0 top-0 h-[80px] w-2 bg-[#80BBE6] rounded-l-md"></div>
 
               <div className="flex justify-between items-center pl-4">
-                <div className="w-full" onClick={() => setEditTask(t)}>
+                <div
+                  className="w-full"
+                  onClick={() => {
+                    setEditTask(t);
+                    setEditIndex(t.id);
+                  }}
+                >
                   <h1 className="font-bold">{t.title}</h1>
                   <span className="font-light">{t.description}</span>
                 </div>
