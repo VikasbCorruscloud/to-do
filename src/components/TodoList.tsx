@@ -1,8 +1,8 @@
-import { useState ,useEffect } from "react";
+import { useState, useEffect } from "react";
 import SubmitButton from "./SubmitButton";
 import { FaRegCircleCheck } from "react-icons/fa6";
 
-interface Todo{
+interface Todo {
   id: number;
   title: string;
   description: string;
@@ -14,28 +14,38 @@ const TodoList = () => {
   const [editTask, setEditTask] = useState<Todo | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-    // Fetch todos from API
-    useEffect(() => {
-      const fetchTodos = async () => {
-        try {
-          const response = await fetch("/api/todos");
-          const data = await response.json();
-          setTasks(data.filter((todo: Todo) => !todo.completed));
-          setCompleteTasks(data.filter((todo: Todo) => todo.completed));
-        } catch (error) {
-          console.error("Error fetching todos:", error);
-        }
-      };
-  
-      fetchTodos();
-    }, []);
+  // Fetch todos from API
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch("/api/todos");
+        const data = await response.json();
+        console.log(data);
+        setTasks(data.filter((todo: Todo) => !todo.completed));
+        setCompleteTasks(data.filter((todo: Todo) => todo.completed));
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+      }
+    };
+
+    fetchTodos();
+  }, []);
 
   // Move task to completed
   const completeTask = async (todo: Todo) => {
-    setCompleteTasks((prev) => [...prev, todo]);
-    setTasks((prev) => prev.filter((t) => t.id !== todo.id));
+    try {
+      await fetch(`/api/todos/${todo.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...todo, completed: true }),
+      });
+  
+      setCompleteTasks((prev) => [...prev, { ...todo, completed: true }]);
+      setTasks((prev) => prev.filter((t) => t.id !== todo.id));
+    } catch (error) {
+      console.error("Error completing task:", error);
+    }
   };
-
   // Remove task from completed list
   const deleteTask = async (id: number) => {
     try {
