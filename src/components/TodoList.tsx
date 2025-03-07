@@ -20,8 +20,8 @@ const TodoList = () => {
       try {
         const response = await fetch("/api/todos");
         const data = await response.json();
-        console.log(data);
         setTasks(data.filter((todo: Todo) => !todo.completed));
+        console.log(data)
         setCompleteTasks(data.filter((todo: Todo) => todo.completed));
       } catch (error) {
         console.error("Error fetching todos:", error);
@@ -46,7 +46,7 @@ const TodoList = () => {
       console.error("Error completing task:", error);
     }
   };
-  
+
   // Remove task from completed list
   const deleteTask = async (id: number) => {
     try {
@@ -93,7 +93,7 @@ const TodoList = () => {
       </div>
 
       {/* Completed Tasks */}
-      <h2 className="text-xl font-semibold mb-3">Completed</h2>
+      <h2 className="text-xl font-semibold mb-3 mt-7">Completed</h2>
       <div className="overflow-auto max-h-[500px] pb-20">
         {completeTasks.map((t) => (
           <section
