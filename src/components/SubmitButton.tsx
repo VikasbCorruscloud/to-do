@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { MdClose } from "react-icons/md";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../app/store";
+import { addTodo, updateTodo } from "../features/todoSlice";
 
 interface Todo {
   id: number;
@@ -9,7 +12,6 @@ interface Todo {
 }
 
 interface SubmitButtonProps {
-  setTasks: React.Dispatch<React.SetStateAction<Todo[]>>;
   editTask: Todo | null;
   editIndex: number | null;
   setEditTask: React.Dispatch<React.SetStateAction<Todo | null>>;
@@ -17,12 +19,11 @@ interface SubmitButtonProps {
 }
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({
-  setTasks,
   editTask,
-  editIndex,
   setEditTask,
   setEditIndex,
 }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -39,51 +40,33 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   const submitHandle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() === "") return;
-  
+
     if (editTask) {
-      try {
-        // Send PUT request to update the todo
-        const response = await fetch(`/api/todos/${editTask.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...editTask, title, description }),
-        });
-  
-        if (!response.ok) throw new Error("Failed to update task");
-  
-        const updatedTodo = await response.json();
-  
-        // Update the state with the updated todo
-        setTasks((prevTasks) =>
-          prevTasks.map((t) => (t.id === updatedTodo.id ? updatedTodo : t))
-        );
-  
-        setEditTask(null);
-        setEditIndex(null);
-      } catch (error) {
-        console.error("Error updating todo:", error);
-      }
+      dispatch(
+        updateTodo({
+          ...editTask,
+          title,
+          description,
+        })
+      );
+      setEditIndex(null);
+      setEditTask(null);
     } else {
       // Create new todo
-      try {
-        const response = await fetch("/api/todos", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, description }),
-        });
-  
-        const newTodo = await response.json();
-        setTasks((prev) => [...prev, newTodo]);
-      } catch (error) {
-        console.error("Error creating todo:", error);
-      }
+      dispatch(
+        addTodo({
+          title,
+          description,
+          completed: false,
+        })
+      );
     }
-  
+
     setTitle("");
     setDescription("");
     setShowForm(false);
   };
-  
+
   return (
     <>
       <footer className="fixed bottom-4 left-4 right-4 bg-[#4884AE] h-[48px] rounded-md">
@@ -110,8 +93,8 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
                   setShowForm(false);
                   setEditTask(null);
                   setEditIndex(null);
-                  setTitle("")
-                  setDescription("")
+                  setTitle("");
+                  setDescription("");
                 }}
                 className="text-lg bg-[#DBDBDB] rounded-full w-[30px] h-[30px]"
               >

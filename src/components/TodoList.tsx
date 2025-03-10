@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import SubmitButton from "./SubmitButton";
 import { FaRegCircleCheck } from "react-icons/fa6";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../app/store";
+import { fetchTodos, updateTodo, deleteTodo } from "../features/todoSlice";
 
 interface Todo {
   id: number;
@@ -8,53 +11,36 @@ interface Todo {
   description: string;
   completed: boolean;
 }
+
 const TodoList = () => {
-  const [tasks, setTasks] = useState<Todo[]>([]);
-  const [completeTasks, setCompleteTasks] = useState<Todo[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const tasks = useSelector(
+    (state: RootState) => state.todos.tasks
+  );
+  const completeTasks = useSelector(
+    (state: RootState) => state.todos.completeTasks
+  );
   const [editTask, setEditTask] = useState<Todo | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
   // Fetch todos from API
   useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const response = await fetch("/api/todos");
-        const data = await response.json();
-        setTasks(data.filter((todo: Todo) => !todo.completed));
-        console.log(data)
-        setCompleteTasks(data.filter((todo: Todo) => todo.completed));
-      } catch (error) {
-        console.error("Error fetching todos:", error);
-      }
-    };
-
-    fetchTodos();
-  }, []);
+    dispatch(fetchTodos());
+  }, [dispatch]);
 
   // Move task to completed
-  const completeTask = async (todo: Todo) => {
-    try {
-      await fetch(`/api/todos/${todo.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...todo, completed: true }),
-      });
-
-      setCompleteTasks((prev) => [...prev, { ...todo, completed: true }]);
-      setTasks((prev) => prev.filter((t) => t.id !== todo.id));
-    } catch (error) {
-      console.error("Error completing task:", error);
-    }
+  const completeTask = (todo: Todo) => {
+    dispatch(
+      updateTodo({
+        ...todo,
+        completed: true,
+      })
+    );
   };
 
   // Remove task from completed list
-  const deleteTask = async (id: number) => {
-    try {
-      await fetch(`/api/todos/${id}`, { method: "DELETE" });
-      setCompleteTasks((prev) => prev.filter((t) => t.id !== id));
-    } catch (error) {
-      console.error("Error deleting todo:", error);
-    }
+  const removeTodo = (id: number) => {
+    dispatch(deleteTodo(id));
   };
 
   return (
@@ -107,7 +93,7 @@ const TodoList = () => {
                 <h1 className="font-bold">{t.title}</h1>
                 <span className="font-light">{t.description}</span>
               </div>
-              <button onClick={() => deleteTask(t.id)}>
+              <button onClick={() => removeTodo(t.id)}>
                 <FaRegCircleCheck style={{ color: "#80BBE6" }} size={25} />
               </button>
             </div>
@@ -117,7 +103,6 @@ const TodoList = () => {
 
       {/* Task Form */}
       <SubmitButton
-        setTasks={setTasks}
         editTask={editTask}
         editIndex={editIndex}
         setEditTask={setEditTask}
